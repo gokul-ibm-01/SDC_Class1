@@ -1,0 +1,34 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from google.colab import files
+
+uploaded = files.upload()
+
+# 📌 Load dataset from CSV file (Make sure 'house_data.csv' exists)
+df = pd.read_csv("house_data.csv")  # Ensure the CSV has the correct format
+
+# 📊 Define features (X) and target variable (y)
+X = df[["Size (sq ft)", "Bedrooms", "Location Score"]]
+y = df["Price ($)"]
+
+# 🎯 Split into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 📈 Train the Linear Regression Model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# 🔮 Ask the user for house details
+print("\n🔮 Enter details for the house you want to predict:")
+new_size = int(input("Size (sq ft): "))
+new_bedroom = int(input("Number of Bedrooms: "))
+new_loc_score = int(input("Location Score (1-10): "))
+
+# 📊 Predict the price
+new_house = pd.DataFrame([[new_size, new_bedroom, new_loc_score]], columns=["Size (sq ft)", "Bedrooms", "Location Score"])
+predicted_price = model.predict(new_house)
+
+
+print(f"\n🏠 Predicted Price for New House: ${predicted_price[0]:,.2f}")
