@@ -1,0 +1,57 @@
+import numpy as np
+import pandas as pd
+import re
+import string
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from google.colab import files
+uploaded = files.upload()
+
+
+# 📌 Load Dataset from CSV
+file_path = "spam.csv"  # Make sure to upload this file in Google Colab
+df = pd.read_csv("spam.csv", encoding='utf-8')
+
+# ✅ Correct column selection based on the generated dataset
+df = df[['Label', 'Message']]
+
+
+df['Label'] = df['Label'].map({'ham': 0, 'spam': 1})  # Convert labels to binary (0 = Not Spam, 1 = Spam)
+
+# 🔹 Preprocess the text (remove punctuation, convert to lowercase)
+def preprocess_text(text):
+    text = text.lower()
+    text = re.sub(f"[{string.punctuation}]", "", text)
+    return text
+
+df['Message'] = df['Message'].apply(preprocess_text)
+
+# 🎯 Define features (X) and labels (y)
+X = df['Message']
+y = df['Label']
+
+# 📊 Convert text into numerical features using TF-IDF Vectorization
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(X)
+
+# 🎯 Split into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 📈 Train the Logistic Regression Model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# 📊 Evaluate the model
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"✅ Model Accuracy: {accuracy:.2f}")
+
+# 🔮 Predict whether a new message is spam or not
+new_message = input("Enter a message to classify: ")
+new_message = preprocess_text(new_message)
+new_message_vectorized = vectorizer.transform([new_message])
+prediction = model.predict(new_message_vectorized)
+
+print(f"\n🔮 Prediction: {'Spam' if prediction[0] == 1 else 'Not Spam'}")
